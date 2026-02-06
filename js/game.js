@@ -270,12 +270,16 @@ class Game {
                 }
             }
 
-            // Projectile-enemy collision
+            // Projectile-enemy collision (distance-based for reliability)
             for (const proj of this.projectiles) {
                 if (!proj.alive || !enemy.alive) continue;
-                const projB = proj.getBounds();
-                const enemyB = enemy.getBounds();
-                if (this.rectsOverlap(projB, enemyB)) {
+                const ecx = enemy.x + enemy.width / 2;
+                const ecy = enemy.y + enemy.height / 2;
+                const dx = proj.x - ecx;
+                const dy = proj.y - ecy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const hitRadius = (enemy.width + enemy.height) / 3 + 8;
+                if (dist < hitRadius) {
                     const hit = enemy.takeDamage(proj.damage, proj);
                     if (hit) {
                         this.audio.playHit(proj.type);
@@ -285,10 +289,9 @@ class Game {
                         if (!enemy.alive) {
                             this.player.enemiesDefeated++;
                             this.level.pickups.push(new Pickup(enemy.x, enemy.y, 'gem', this.assets));
-                            this.effects.push(new ParticleEffect(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, '#fff', 15));
+                            this.effects.push(new ParticleEffect(ecx, ecy, '#fff', 15));
                         }
                     } else {
-                        // Blocked by shield
                         this.effects.push(new ParticleEffect(proj.x, proj.y, '#8888ff', 5));
                     }
                     proj.alive = false;
@@ -300,9 +303,12 @@ class Game {
         for (const pickup of this.level.pickups) {
             pickup.update();
             if (!pickup.alive) continue;
-            const pickupB = pickup.getBounds();
-            const plb = this.player.getBounds();
-            if (this.rectsOverlap(pickupB, plb)) {
+            const pcx = pickup.x + pickup.width / 2;
+            const pcy = pickup.y + pickup.height / 2;
+            const plcx = this.player.x + this.player.width / 2;
+            const plcy = this.player.y + this.player.height / 2;
+            const pdist = Math.sqrt((pcx - plcx) ** 2 + (pcy - plcy) ** 2);
+            if (pdist < 40) {
                 pickup.alive = false;
                 this.audio.playPickup(pickup.type);
                 if (pickup.type === 'gem') {
