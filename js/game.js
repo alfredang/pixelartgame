@@ -222,9 +222,11 @@ class Game {
         }
 
         // Casting spells
-        if (this.input.mouse.down || this.input.isKeyDown(' ')) {
+        const mouseAim = this.input.mouse.down;
+        const keyboardShoot = this.input.isKeyDown(' ');
+        if (mouseAim || keyboardShoot) {
             const castOffset = { x: -this.camera.x, y: -this.camera.y };
-            const spell = this.player.castSpell(this.input.mouse.x, this.input.mouse.y, castOffset);
+            const spell = this.player.castSpell(this.input.mouse.x, this.input.mouse.y, castOffset, mouseAim);
             if (spell) {
                 this.projectiles.push(spell);
                 this.audio.playShoot(spell.type);
