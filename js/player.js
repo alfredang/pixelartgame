@@ -8,17 +8,17 @@ class Player {
         this.health = 5;
         this.maxHealth = 5;
         this.gems = 0;
-        this.invincibleTimer = 0;
+        this.invincibleTimer = 120; // spawn invincibility (2 seconds)
         this.assets = assets;
-        this.direction = 'bottom'; // bottom, right, up, bottom_right, up_right
+        this.direction = 'bottom';
         this.facingLeft = false;
+        this.facingAngle = Math.PI / 2; // facing down initially
         this.currentSpell = 'fire';
         this.unlockedSpells = ['fire'];
         this.castCooldown = 0;
         this.alive = true;
         this.bobTimer = 0;
 
-        // Direction sprite mapping
         this.dirSprites = {
             'bottom': 'godot_bottom',
             'right': 'godot_right',
@@ -43,17 +43,18 @@ class Player {
         if (input.isKeyDown('a') || input.isKeyDown('arrowleft')) dx = -1;
         if (input.isKeyDown('d') || input.isKeyDown('arrowright')) dx = 1;
 
-        // Normalize diagonal movement
         if (dx !== 0 && dy !== 0) {
             dx *= 0.707;
             dy *= 0.707;
         }
 
-        // Update direction based on movement
         if (dx !== 0 || dy !== 0) {
             this.bobTimer += 0.15;
             if (dx < 0) this.facingLeft = true;
             else if (dx > 0) this.facingLeft = false;
+
+            // Update facing angle based on movement
+            this.facingAngle = Math.atan2(dy, dx);
 
             const absDx = Math.abs(dx);
             if (dy > 0 && absDx > 0.3) this.direction = 'bottom_right';
@@ -66,11 +67,9 @@ class Player {
         this.x += dx * this.speed;
         this.y += dy * this.speed;
 
-        // Clamp to world bounds
         this.x = Math.max(0, Math.min(this.x, worldWidth - this.width));
         this.y = Math.max(0, Math.min(this.y, worldHeight - this.height));
 
-        // Spell switching
         if (input.isKeyDown('1') && this.unlockedSpells.includes('fire')) this.currentSpell = 'fire';
         if (input.isKeyDown('2') && this.unlockedSpells.includes('ice')) this.currentSpell = 'ice';
         if (input.isKeyDown('3') && this.unlockedSpells.includes('lightning')) this.currentSpell = 'lightning';
@@ -79,15 +78,25 @@ class Player {
         if (this.invincibleTimer > 0) this.invincibleTimer--;
     }
 
-    castSpell(mouseX, mouseY, cameraOffset) {
+    castSpell(mouseX, mouseY, cameraOffset, useMouseAim) {
         if (this.castCooldown > 0 || !this.alive) return null;
 
-        // Calculate direction toward mouse in world coords
-        const worldMouseX = mouseX - cameraOffset.x;
-        const worldMouseY = mouseY - cameraOffset.y;
         const cx = this.x + this.width / 2;
         const cy = this.y + this.height / 2;
-        const angle = Math.atan2(worldMouseY - cy, worldMouseX - cx);
+        let angle;
+
+        if (useMouseAim) {
+            // Aim toward mouse cursor (world coords)
+            const worldMouseX = mouseX - cameraOffset.x;
+            const worldMouseY = mouseY - cameraOffset.y;
+            angle = Math.atan2(worldMouseY - cy, worldMouseX - cx);
+            // Also update facing direction to match aim
+            this.facingAngle = angle;
+            this.facingLeft = Math.cos(angle) < 0;
+        } else {
+            // Shoot in the direction player is facing
+            angle = this.facingAngle;
+        }
 
         let spell = null;
         if (this.currentSpell === 'fire') {
@@ -106,7 +115,7 @@ class Player {
     takeDamage(amount) {
         if (this.invincibleTimer > 0) return;
         this.health -= amount;
-        this.invincibleTimer = 60; // 1 second of invincibility
+        this.invincibleTimer = 60;
         if (this.health <= 0) {
             this.health = 0;
             this.alive = false;

@@ -21,9 +21,24 @@ class Level {
 
         // Generate room layout
         this.generateRooms();
+
+        // Player spawn point (center of room 0)
+        const r0 = this.rooms[0];
+        this.playerSpawnX = r0.x + r0.w / 2;
+        this.playerSpawnY = r0.y + r0.h / 2;
+
         this.generateProps();
         this.generateEnemies();
         this.generatePickups();
+    }
+
+    // Check if a position is too close to the player spawn
+    isTooCloseToSpawn(x, y, w, h, minDist) {
+        const cx = x + (w || 0) / 2;
+        const cy = y + (h || 0) / 2;
+        const dx = cx - this.playerSpawnX;
+        const dy = cy - this.playerSpawnY;
+        return Math.sqrt(dx * dx + dy * dy) < minDist;
     }
 
     generateRooms() {
@@ -84,14 +99,20 @@ class Level {
             { name: 'grass_rock_2', w: 50, h: 40, solid: false },
         ];
 
-        // Place props in each room
-        for (const room of this.rooms) {
+        // Place props in each room (avoid player spawn in room 0)
+        for (let ri = 0; ri < this.rooms.length; ri++) {
+            const room = this.rooms[ri];
             const numProps = 8 + Math.floor(Math.random() * 6);
             for (let i = 0; i < numProps; i++) {
                 const propType = propTypes[Math.floor(Math.random() * propTypes.length)];
                 const margin = 80;
-                const x = room.x + margin + Math.random() * (room.w - margin * 2 - propType.w);
-                const y = room.y + margin + Math.random() * (room.h - margin * 2 - propType.h);
+                let x, y, attempts = 0;
+                do {
+                    x = room.x + margin + Math.random() * (room.w - margin * 2 - propType.w);
+                    y = room.y + margin + Math.random() * (room.h - margin * 2 - propType.h);
+                    attempts++;
+                } while (ri === 0 && propType.solid && attempts < 20 &&
+                         this.isTooCloseToSpawn(x, y, propType.w, propType.h, 150));
 
                 this.props.push({
                     x, y,
@@ -152,8 +173,13 @@ class Level {
         for (const spawn of spawns) {
             for (let i = 0; i < spawn.count; i++) {
                 const margin = 120;
-                const x = room.x + margin + Math.random() * (room.w - margin * 2);
-                const y = room.y + margin + Math.random() * (room.h - margin * 2);
+                let x, y, attempts = 0;
+                do {
+                    x = room.x + margin + Math.random() * (room.w - margin * 2);
+                    y = room.y + margin + Math.random() * (room.h - margin * 2);
+                    attempts++;
+                } while (roomIndex === 0 && attempts < 30 &&
+                         this.isTooCloseToSpawn(x, y, 60, 40, 250));
                 this.enemies.push(new Enemy(x, y, spawn.type, this.assets));
             }
         }
