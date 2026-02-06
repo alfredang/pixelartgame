@@ -8,6 +8,10 @@ A top-down pixel art action dungeon crawler built with HTML5 Canvas and vanilla 
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![Canvas](https://img.shields.io/badge/Canvas-API-blue?style=flat)
 
+## Screenshot
+
+![Gameplay Screenshot](screenshot.png)
+
 ## Gameplay
 
 Control the Godot mascot through dungeon rooms, fight haunted weapons, collect gems, and cast elemental spells to defeat all enemies.
