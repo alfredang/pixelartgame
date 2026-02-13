@@ -70,6 +70,20 @@ python3 -m http.server 8080
 # Then open http://localhost:8080
 ```
 
+## Running with Docker
+
+You can also run the game using Docker:
+
+```bash
+# Pull the image from Docker Hub
+docker pull alfredang/pixelartgame:latest
+
+# Run the container
+docker run -d -p 8080:80 alfredang/pixelartgame:latest
+
+# Then open http://localhost:8080
+```
+
 ## Credits
 
 - Pixel art assets by [GDQuest](https://www.gdquest.com/) from their [Godot Tours 101](https://github.com/gdquest-demos/godot-tours-101-the-godot-editor) project (MIT License)
