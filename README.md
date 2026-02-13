@@ -76,10 +76,10 @@ You can also run the game using Docker:
 
 ```bash
 # Pull the image from Docker Hub
-docker pull alfredang/pixelartgame:latest
+docker pull tertiaryinfotech/pixelartgame:latest
 
 # Run the container
-docker run -d -p 8080:80 alfredang/pixelartgame:latest
+docker run -d -p 8080:80 tertiaryinfotech/pixelartgame:latest
 
 # Then open http://localhost:8080
 ```
