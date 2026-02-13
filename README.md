@@ -78,6 +78,9 @@ You can also run the game using Docker:
 # Pull the image from Docker Hub
 docker pull tertiaryinfotech/pixelartgame:latest
 
+# Or build the image locally
+docker build -t tertiaryinfotech/pixelartgame:latest .
+
 # Run the container
 docker run -d -p 8080:80 tertiaryinfotech/pixelartgame:latest
 
